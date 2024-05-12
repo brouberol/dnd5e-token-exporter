@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "dnd5e-token-exporter"
+version = "0.1.0"
+description = "Generate printable pages of D&D tokens"
+authors = ["Balthazar Rouberol <br@imap.cc>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pillow = "^10.3.0"
+requests = "^2.31.0"
+
+[tool.poetry.group.dev.dependencies]
+
+[tool.poetry.scripts]
+dnd5e-token-exporter = 'dnd5e_token_exporter.cli:main'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
