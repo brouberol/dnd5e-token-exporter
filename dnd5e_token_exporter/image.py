@@ -20,7 +20,7 @@ TOKENS_PER_COLUMN = 9
 TOKEN_URL_TPL = "https://5e.tools/img/bestiary/tokens/{token_name}.webp"
 
 
-def fetch_data(token_name) -> Path:
+def fetch_data(token_name: str) -> Path:
     cached_file = Path(f"{tempfile.gettempdir()}/{token_name.replace('/', '_')}.webp")
     if cached_file.exists():
         return cached_file
