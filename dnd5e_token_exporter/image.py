@@ -16,8 +16,8 @@ A4_HEIGHT_MM = 297
 A4_WIDTH_PX = int(A4_WIDTH_MM * DPI / INCH_IN_MM)  # 25.4 mm/inch
 A4_HEIGHT_PX = int(A4_HEIGHT_MM * DPI / INCH_IN_MM)
 
-TOKENS_PER_LINE = 6
-TOKENS_PER_COLUMN = 9
+TOKENS_PER_LINE = 7
+TOKENS_PER_COLUMN = 10
 TOKEN_URL_TPL = "https://5e.tools/img/bestiary/tokens/{token_name}.webp"
 
 
@@ -51,9 +51,9 @@ def generate_token_page(tokens: list[Token], output_filename: Path):
     images = [download_token(token) for token in tokens]
 
     token_dimension = int(25 * DPI / INCH_IN_MM)
-    margin_size = int(5 * DPI / INCH_IN_MM)
+    margin_size = int(4 * DPI / INCH_IN_MM)
 
-    start_x, start_y = 2 * margin_size, 2 * margin_size
+    start_x, start_y = int(1.5 * margin_size), int(1.5 * margin_size)
     for i in range(TOKENS_PER_COLUMN):
         for j in range(TOKENS_PER_LINE):
             index = i * TOKENS_PER_LINE + j
