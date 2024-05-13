@@ -1,4 +1,5 @@
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
 
 import requests
@@ -20,11 +21,19 @@ TOKENS_PER_COLUMN = 9
 TOKEN_URL_TPL = "https://5e.tools/img/bestiary/tokens/{token_name}.webp"
 
 
-def fetch_data(token_name: str) -> Path:
-    cached_file = Path(f"{tempfile.gettempdir()}/{token_name.replace('/', '_')}.webp")
+@dataclass
+class Token:
+    name: str
+    local: bool
+
+
+def fetch_data(token: Token) -> Path:
+    if token.local:
+        return token.name
+    cached_file = Path(f"{tempfile.gettempdir()}/{token.name.replace('/', '_')}.webp")
     if cached_file.exists():
         return cached_file
-    token_url = TOKEN_URL_TPL.format(token_name=token_name)
+    token_url = TOKEN_URL_TPL.format(token_name=token.name)
     resp = requests.get(token_url)
     resp.raise_for_status()
     cached_file.write_bytes(resp.content)
@@ -36,11 +45,10 @@ def download_token(token_name: str) -> Image:
     return Image.open(filename)
 
 
-def generate_token_page(token_names: list[str], output_filename: Path):
+def generate_token_page(tokens: list[Token], output_filename: Path):
     # Create a new image with white background
     page = Image.new("RGBA", (A4_WIDTH_PX, A4_HEIGHT_PX), "white")
-
-    images = [download_token(token_name) for token_name in token_names]
+    images = [download_token(token) for token in tokens]
 
     token_dimension = int(25 * DPI / INCH_IN_MM)
     margin_size = int(5 * DPI / INCH_IN_MM)
