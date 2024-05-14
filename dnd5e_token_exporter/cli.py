@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Self
 
-from .image import Token, generate_token_page
+from .image import PageFormat, Token, generate_token_page
 
 
 @dataclass
@@ -42,6 +42,13 @@ def parse_args() -> argparse.Namespace:
         type=CliToken.from_str,
     )
     parser.add_argument(
+        "--format",
+        help="Page format",
+        type=PageFormat,
+        default=PageFormat.A4,
+        choices=list(PageFormat._value2member_map_.keys()),
+    )
+    parser.add_argument(
         "-o",
         "--output",
         help="The name of the generated tokens file",
@@ -63,6 +70,7 @@ def resolve_tokens_repetitions(tokens: CliToken) -> list[str]:
 
 def main():
     args = parse_args()
+    tokens = resolve_tokens_repetitions(args.tokens)
     generate_token_page(
-        tokens=resolve_tokens_repetitions(args.tokens), output_filename=args.output
+        tokens=tokens, output_filename=args.output, page_format=args.format
     )
