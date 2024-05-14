@@ -31,15 +31,19 @@ class CliToken:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Export dnd5e tokens ready to print")
+    parser = argparse.ArgumentParser(
+        description="Export dnd5e tokens ready to print",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     parser.add_argument(
         "--tokens",
         nargs="+",
         help=(
-            "Tokens to export. <book>/<creature>[:<times>] or <local-path>[:<times>]"
-            "Example: MM/Goblin:6 local-token.png:2"
+            "Tokens to export. <book>/<creature>[:<times>] or <local-path>[:<times>] "
+            "Example: MM/Goblin:6 ~/Documents/token.png:2 'PaBTSO/Mind Flayer Prophet'"
         ),
         type=CliToken.from_str,
+        required=True,
     )
     parser.add_argument(
         "--format",
