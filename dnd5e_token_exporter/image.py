@@ -18,21 +18,22 @@ A4_HEIGHT_PX = int(A4_HEIGHT_MM * DPI / INCH_IN_MM)
 
 TOKENS_PER_LINE = 7
 TOKENS_PER_COLUMN = 10
-TOKEN_URL_TPL = "https://5e.tools/img/bestiary/tokens/{token_name}.webp"
+TOKEN_URL_TPL = "https://5e.tools/img/bestiary/tokens/{source}/{name}.webp"
 
 
 @dataclass
 class Token:
+    source: str
     name: str
     local: bool
 
     def download_token_file(self) -> Path:
         if self.local:
             return self.name
-        cached_file = Path(f"{tempfile.gettempdir()}/{self.name.replace('/', '_'}.webp")
+        cached_file = Path(f"{tempfile.gettempdir()}/{self.source}_{self.name}.webp")
         if cached_file.exists():
             return cached_file
-        token_url = TOKEN_URL_TPL.format(token_name=self.name)
+        token_url = TOKEN_URL_TPL.format(source=self.source, name=self.name)
         resp = requests.get(token_url)
         resp.raise_for_status()
         cached_file.write_bytes(resp.content)
