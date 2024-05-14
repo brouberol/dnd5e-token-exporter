@@ -26,29 +26,27 @@ class Token:
     name: str
     local: bool
 
-
-def fetch_data(token: Token) -> Path:
-    if token.local:
-        return token.name
-    cached_file = Path(f"{tempfile.gettempdir()}/{token.name.replace('/', '_')}.webp")
-    if cached_file.exists():
+    def download_token_file(self) -> Path:
+        if self.local:
+            return self.name
+        cached_file = Path(f"{tempfile.gettempdir()}/{self.name.replace('/', '_'}.webp")
+        if cached_file.exists():
+            return cached_file
+        token_url = TOKEN_URL_TPL.format(token_name=self.name)
+        resp = requests.get(token_url)
+        resp.raise_for_status()
+        cached_file.write_bytes(resp.content)
         return cached_file
-    token_url = TOKEN_URL_TPL.format(token_name=token.name)
-    resp = requests.get(token_url)
-    resp.raise_for_status()
-    cached_file.write_bytes(resp.content)
-    return cached_file
 
-
-def download_token(token_name: str) -> Image:
-    filename = fetch_data(token_name)
-    return Image.open(filename)
+    def as_image(self) -> Image:
+        filename = self.download_token_file()
+        return Image.open(filename)
 
 
 def generate_token_page(tokens: list[Token], output_filename: Path):
     # Create a new image with white background
     page = Image.new("RGBA", (A4_WIDTH_PX, A4_HEIGHT_PX), "white")
-    images = [download_token(token) for token in tokens]
+    images = [token.as_image() for token in tokens]
 
     token_dimension = int(25 * DPI / INCH_IN_MM)
     margin_size = int(4 * DPI / INCH_IN_MM)
