@@ -25,7 +25,7 @@ TOKEN_SIZE_MM = 25
 TOKEN_SIZE_PX = mm_to_px(TOKEN_SIZE_MM)
 MARGIN_SIZE_MM = 4
 MARGIN_SIZE_PX = mm_to_px(MARGIN_SIZE_MM)
-BASE_TOKEN_SIZE = 280  # medium creatures take 280px
+BASE_TOKEN_SIZE = 280  # medium (and smaller) creatures have a 280x280px size
 
 TOKEN_URL_TPL = "https://5e.tools/img/bestiary/tokens/{source}/{name}.webp"
 
