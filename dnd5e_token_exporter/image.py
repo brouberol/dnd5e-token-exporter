@@ -85,7 +85,10 @@ class Token:
 
     def as_image(self) -> Image:
         filename = self.download_token_file()
-        return Image.open(filename)
+        rbga_img = Image.open(filename)
+        img = Image.new("RGB", rbga_img.size, "white")
+        img.paste(rbga_img, rbga_img)
+        return img
 
 
 class PageGrid:
@@ -132,7 +135,7 @@ def generate_token_page(
     tokens: list[Token], output_filename: Path, page_format: PageFormat = PageFormat.A4
 ):
     # Create a new image with white background
-    page_img = Image.new("RGBA", (page_format.width_px, page_format.height_px), "white")
+    page_img = Image.new("RGB", (page_format.width_px, page_format.height_px), "white")
     grid = PageGrid(page_format)
     images = [token.as_image() for token in tokens]
     images = sorted(
