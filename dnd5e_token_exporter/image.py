@@ -149,4 +149,4 @@ def generate_token_page(
             page_img.paste(image, slot_coords)
 
     print(f"Generating {output_filename}")
-    page_img.save(output_filename)
+    page_img.save(output_filename, dpi=(DPI, DPI))
