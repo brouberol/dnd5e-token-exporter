@@ -78,7 +78,7 @@ class Token:
         if cached_file.exists():
             return cached_file
         token_url = TOKEN_URL_TPL.format(source=self.source, name=self.name)
-        resp = requests.get(token_url)
+        resp = requests.get(token_url, timeout=5)
         resp.raise_for_status()
         cached_file.write_bytes(resp.content)
         return cached_file
