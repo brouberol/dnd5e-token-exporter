@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 import requests
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from PIL.WebPImagePlugin import WebPImageFile
 
 INCH_IN_MM = 25.4
@@ -26,7 +26,7 @@ TOKEN_SIZE_PX = mm_to_px(TOKEN_SIZE_MM)
 MARGIN_SIZE_MM = 4
 MARGIN_SIZE_PX = mm_to_px(MARGIN_SIZE_MM)
 BASE_TOKEN_SIZE = 280  # medium (and smaller) creatures have a 280x280px size
-
+FONT_SIZE = 10
 TOKEN_URL_TPL = "https://5e.tools/img/bestiary/tokens/{source}/{name}.webp"
 
 
@@ -130,23 +130,37 @@ class PageGrid:
         slot_start_y = start_y + (TOKEN_SIZE_PX * row_idx)
         return (slot_start_x, slot_start_y)
 
+    def add_legend(self, draw, font, token, image, slot_coords):
+        text_coords = (
+            slot_coords[0] + int(image.size[0] / 3),
+            slot_coords[1] + image.size[1] + FONT_SIZE / 2,
+        )
+        draw.text(text_coords, token.name, (0, 0, 0), font=font)
+
 
 def generate_token_page(
-    tokens: list[Token], output_filename: Path, page_format: PageFormat = PageFormat.A4
+    tokens: list[Token],
+    output_filename: Path,
+    page_format: PageFormat = PageFormat.A4,
+    show_names: bool = False,
 ):
     # Create a new image with white background
     page_img = Image.new("RGB", (page_format.width_px, page_format.height_px), "white")
+    draw = ImageDraw.Draw(page_img)
     grid = PageGrid(page_format)
-    images = [token.as_image() for token in tokens]
+    images = [(token, token.as_image()) for token in tokens]
     images = sorted(
-        images, key=lambda img: img.size, reverse=True
+        images, key=lambda t: t[1].size, reverse=True
     )  # insert large tokens first, for efficient bin-packing
 
-    for image in images:
+    font = ImageFont.truetype("Monaco.ttf", FONT_SIZE)
+    for token, image in images:
         if slot := grid.next_available_slot(*image.size):
             grid.fill_slot(*slot, image=image)
             slot_coords = grid.slot_coordinates(*slot)
             page_img.paste(image, slot_coords)
+            if show_names:
+                grid.add_legend(draw, font, token, image, slot_coords)
 
     print(f"Generating {output_filename}")
     page_img.save(output_filename, dpi=(DPI, DPI))

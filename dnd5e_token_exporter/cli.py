@@ -59,6 +59,11 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default="tokens.pdf",
     )
+    parser.add_argument(
+        "--show-names",
+        help="When specified, display the monsters name beneath their tokens",
+        action="store_true",
+    )
     return parser.parse_args()
 
 
@@ -76,5 +81,8 @@ def main():
     args = parse_args()
     tokens = resolve_tokens_repetitions(args.tokens)
     generate_token_page(
-        tokens=tokens, output_filename=args.output, page_format=args.format
+        tokens=tokens,
+        output_filename=args.output,
+        page_format=args.format,
+        show_names=args.show_names,
     )
