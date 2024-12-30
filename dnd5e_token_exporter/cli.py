@@ -39,8 +39,9 @@ def parse_args() -> argparse.Namespace:
         "--tokens",
         nargs="+",
         help=(
-            "Tokens to export. <book>/<creature>[:<times>] or <local-path>[:<times>] "
-            "Example: MM/Goblin:6 ~/Documents/token.png:2 'PaBTSO/Mind Flayer Prophet'"
+            "Tokens to export. [<book>]/<creature>[:<times>] or <local-path>[:<times>] "
+            "If book is unspecified, MM is assumed."
+            "Example: MM/Goblin:6 Slaad ~/Documents/token.png:2 'PaBTSO/Mind Flayer Prophet'"
         ),
         type=CliToken.from_str,
         required=True,
