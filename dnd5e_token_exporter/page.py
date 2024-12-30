@@ -98,6 +98,7 @@ class PageGrid:
                     and len(self.grid) >= row_idx + height_size_factor
                 ):
                     return (row_idx, col_idx)
+        return None
 
     def fill_slot(self, row_idx: int, col_idx: int, image: Image.Image):
         width_size_factor, height_size_factor = self.size_factor(*image.size)

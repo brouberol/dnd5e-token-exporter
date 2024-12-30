@@ -17,8 +17,8 @@ class CliToken:
     @classmethod
     def from_str(cls, s: str) -> Self:
         if ":" in s:
-            token, times = s.split(":")
-            times = int(times)
+            token, times_str = s.split(":")
+            times = int(times_str)
         else:
             token, times = s, 1
         if token.count("/") == 1:
