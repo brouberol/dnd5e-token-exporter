@@ -40,6 +40,7 @@ class PageFormat(StrEnum):
             return A4_WIDTH_MM
         elif self.value == "A3":
             return A3_WIDTH_MM
+        raise NotImplementedError(f"Dimension {self.value} is not supported")
 
     @property
     def height_mm(self) -> int:
@@ -47,6 +48,7 @@ class PageFormat(StrEnum):
             return A4_HEIGHT_MM
         elif self.value == "A3":
             return A3_HEIGHT_MM
+        raise NotImplementedError(f"Dimension {self.value} is not supported")
 
     @property
     def width_px(self):
@@ -73,7 +75,7 @@ class Token:
 
     def download_token_file(self) -> Path:
         if self.local:
-            return self.name
+            return Path(self.name)
         cached_file = Path(f"{tempfile.gettempdir()}/{self.source}_{self.name}.webp")
         if cached_file.exists():
             return cached_file
@@ -83,7 +85,7 @@ class Token:
         cached_file.write_bytes(resp.content)
         return cached_file
 
-    def as_image(self) -> Image:
+    def as_image(self) -> Image.Image:
         filename = self.download_token_file()
         rbga_img = Image.open(filename)
         img = Image.new("RGB", rbga_img.size, "white")
@@ -118,7 +120,7 @@ class PageGrid:
                     return (row_idx, col_idx)
         raise ValueError("The page is filled!")
 
-    def fill_slot(self, row_idx: int, col_idx: int, image: WebPImageFile):
+    def fill_slot(self, row_idx: int, col_idx: int, image: Image.Image):
         width_size_factor, height_size_factor = self.size_factor(*image.size)
         for i in range(width_size_factor):
             for j in range(height_size_factor):

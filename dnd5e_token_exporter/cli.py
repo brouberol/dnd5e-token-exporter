@@ -27,7 +27,7 @@ class CliToken:
         else:
             kwargs = {"name": token}
         local = Path(token).exists()
-        return CliToken(times=times, local=local, **kwargs)
+        return cls(times=times, local=local, **kwargs)
 
 
 def parse_args() -> argparse.Namespace:
@@ -67,7 +67,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def resolve_tokens_repetitions(tokens: CliToken) -> list[str]:
+def resolve_tokens_repetitions(tokens: list[CliToken]) -> list[Token]:
     out = []
     for token in tokens:
         out.extend(
