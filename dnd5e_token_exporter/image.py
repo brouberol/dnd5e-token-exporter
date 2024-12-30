@@ -110,6 +110,10 @@ class PageGrid:
         self, size_w: int, size_h: int
     ) -> Optional[tuple[int, int]]:
         width_size_factor, height_size_factor = self.size_factor(size_w, size_h)
+        # Note: this scans the entire grid whenever it its called, which is only fine
+        # due the small amount of tokens and grid slots. We could optimize this method
+        # by not re-scanning used slots from the get go and keeping track of all available
+        # top-right empty slots we've alreadyt encountered.
         for row_idx in range(len(self.grid)):
             for col_idx in range(len(self.grid[row_idx])):
                 if (
