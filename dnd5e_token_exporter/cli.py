@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Self
 
-from .page import PageFormat, Token, generate_token_page
+from .page import PageFormat, Token, generate_token_multipage_pdf
 
 
 @dataclass
@@ -71,17 +71,14 @@ def parse_args() -> argparse.Namespace:
 def resolve_tokens_repetitions(tokens: list[CliToken]) -> list[Token]:
     out = []
     for token in tokens:
-        out.extend(
-            [Token(name=token.name, local=token.local, source=token.source)]
-            * token.times
-        )
+        out.extend([Token(name=token.name, local=token.local, source=token.source)] * token.times)
     return out
 
 
 def main():
     args = parse_args()
     tokens = resolve_tokens_repetitions(args.tokens)
-    generate_token_page(
+    generate_token_multipage_pdf(
         tokens=tokens,
         output_filename=args.output,
         page_format=args.format,
