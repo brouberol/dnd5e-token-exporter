@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Self
 
-from .image import PageFormat, Token, generate_token_page
+from .page import PageFormat, Token, generate_token_page
 
 
 @dataclass

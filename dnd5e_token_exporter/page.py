@@ -1,11 +1,11 @@
-import tempfile
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Self, NamedTuple
 
-import requests
 from PIL import Image, ImageDraw, ImageFont
+
+from .token import Token
 
 INCH_IN_MM = 25.4
 DPI = 300
@@ -26,7 +26,10 @@ MARGIN_SIZE_MM = 4
 MARGIN_SIZE_PX = mm_to_px(MARGIN_SIZE_MM)
 BASE_TOKEN_SIZE = 280  # medium (and smaller) creatures have a 280x280px size
 FONT_SIZE = 10
-TOKEN_URL_TPL = "https://5e.tools/img/bestiary/tokens/{source}/{name}.webp"
+FONT = ImageFont.truetype("Monaco.ttf", FONT_SIZE)
+
+
+SlotCoords = NamedTuple("SlotCoords", [("row", int), ("column", int)])
 
 
 class PageFormat(StrEnum):
@@ -66,32 +69,6 @@ class PageFormat(StrEnum):
         return int(self.height_mm / TOKEN_SIZE_MM)
 
 
-@dataclass
-class Token:
-    source: str
-    name: str
-    local: bool
-
-    def download_token_file(self) -> Path:
-        if self.local:
-            return Path(self.name)
-        cached_file = Path(f"{tempfile.gettempdir()}/{self.source}_{self.name}.webp")
-        if cached_file.exists():
-            return cached_file
-        token_url = TOKEN_URL_TPL.format(source=self.source, name=self.name)
-        resp = requests.get(token_url, timeout=5)
-        resp.raise_for_status()
-        cached_file.write_bytes(resp.content)
-        return cached_file
-
-    def as_image(self) -> Image.Image:
-        filename = self.download_token_file()
-        rbga_img = Image.open(filename)
-        img = Image.new("RGB", rbga_img.size, "white")
-        img.paste(rbga_img, rbga_img)
-        return img
-
-
 class PageGrid:
     def __init__(self, page_format: PageFormat):
         self.page_format = page_format
@@ -121,7 +98,6 @@ class PageGrid:
                     and len(self.grid) >= row_idx + height_size_factor
                 ):
                     return (row_idx, col_idx)
-        raise ValueError("The page is filled!")
 
     def fill_slot(self, row_idx: int, col_idx: int, image: Image.Image):
         width_size_factor, height_size_factor = self.size_factor(*image.size)
@@ -129,18 +105,62 @@ class PageGrid:
             for j in range(height_size_factor):
                 self.grid[row_idx + i][col_idx + j] = True
 
-    def slot_coordinates(self, row_idx: int, col_idx: int) -> tuple[int, int]:
+    def slot_coordinates(self, row_idx: int, col_idx: int) -> SlotCoords:
         start_x, start_y = int(1.5 * MARGIN_SIZE_PX), int(1.5 * MARGIN_SIZE_PX)
         slot_start_x = start_x + (TOKEN_SIZE_PX * col_idx)
         slot_start_y = start_y + (TOKEN_SIZE_PX * row_idx)
-        return (slot_start_x, slot_start_y)
+        return SlotCoords(slot_start_x, slot_start_y)
 
-    def add_legend(self, draw, font, token, image, slot_coords):
+    def add_legend(
+        self,
+        draw: ImageDraw.ImageDraw,
+        token: Token,
+        image: Image.Image,
+        slot_coords: SlotCoords,
+    ):
         text_coords = (
-            slot_coords[0] + int(image.size[0] / 3),
-            slot_coords[1] + image.size[1] + FONT_SIZE / 2,
+            slot_coords.row + int(image.size[0] / 3),
+            slot_coords.column + image.size[1] + FONT_SIZE / 2,
         )
-        draw.text(text_coords, token.name, (0, 0, 0), font=font)
+        draw.text(text_coords, token.name, (0, 0, 0), font=FONT)
+
+
+@dataclass
+class Page:
+    image: Image.Image
+    draw: ImageDraw.ImageDraw
+    grid: PageGrid
+    page_format: PageFormat
+
+    @classmethod
+    def of_format(cls, page_format: PageFormat) -> Self:
+        page_img = Image.new(
+            "RGB", (page_format.width_px, page_format.height_px), "white"
+        )
+        draw = ImageDraw.Draw(page_img)
+        grid = PageGrid(page_format)
+        return cls(image=page_img, draw=draw, grid=grid, page_format=page_format)
+
+    def binpack_images(
+        self, images: list[tuple[Token, Image.Image]], show_names: bool
+    ) -> list[tuple[Token, Image.Image]]:
+        """Add as many token images in the page as possible.
+
+        If the page is full, return a list of remaining tokens to add to a new page.
+
+        """
+        remaining_images = []
+        for i, (token, image) in enumerate(images):
+            if slot := self.grid.next_available_slot(*image.size):
+                self.grid.fill_slot(*slot, image=image)
+                slot_coords = self.grid.slot_coordinates(*slot)
+                self.image.paste(image, slot_coords)
+                if show_names:
+                    self.grid.add_legend(self.draw, token, image, slot_coords)
+            else:
+                remaining_images = images[i:]
+                break
+        return remaining_images
 
 
 def generate_token_page(
@@ -150,22 +170,19 @@ def generate_token_page(
     show_names: bool = False,
 ):
     # Create a new image with white background
-    page_img = Image.new("RGB", (page_format.width_px, page_format.height_px), "white")
-    draw = ImageDraw.Draw(page_img)
-    grid = PageGrid(page_format)
+    pages: list[Page] = []
     images = [(token, token.as_image()) for token in tokens]
-    images = sorted(
+    remaining_images = sorted(
         images, key=lambda t: t[1].size, reverse=True
     )  # insert large tokens first, for efficient bin-packing
 
-    font = ImageFont.truetype("Monaco.ttf", FONT_SIZE)
-    for token, image in images:
-        if slot := grid.next_available_slot(*image.size):
-            grid.fill_slot(*slot, image=image)
-            slot_coords = grid.slot_coordinates(*slot)
-            page_img.paste(image, slot_coords)
-            if show_names:
-                grid.add_legend(draw, font, token, image, slot_coords)
+    while remaining_images:
+        page = Page.of_format(page_format)
+        remaining_images = page.binpack_images(remaining_images, show_names)
+        pages.append(page)
 
     print(f"Generating {output_filename}")
-    page_img.save(output_filename, dpi=(DPI, DPI))
+    extra_images = [page.image for page in pages[1:] if len(pages) > 1] or []
+    pages[0].image.save(
+        output_filename, dpi=(DPI, DPI), save_all=True, append_images=extra_images
+    )
