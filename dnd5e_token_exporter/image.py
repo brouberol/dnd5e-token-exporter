@@ -6,7 +6,6 @@ from typing import Optional
 
 import requests
 from PIL import Image, ImageDraw, ImageFont
-from PIL.WebPImagePlugin import WebPImageFile
 
 INCH_IN_MM = 25.4
 DPI = 300
