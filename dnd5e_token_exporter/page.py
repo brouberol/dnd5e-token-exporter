@@ -191,6 +191,18 @@ class Page:
         return remaining_images
 
 
+@dataclass
+class MultipagePdf:
+    pages: list[Page]
+
+    def export(self, output_filename: Path):
+        """Generate a multipage (if required) pdf file"""
+        extra_images = [page.image for page in self.pages[1:] if len(self.pages) > 1] or []
+        self.pages[0].image.save(
+            output_filename, dpi=(DPI, DPI), save_all=True, append_images=extra_images
+        )
+
+
 def generate_token_multipage_pdf(
     tokens: list[Token],
     output_filename: Path,
@@ -210,5 +222,4 @@ def generate_token_multipage_pdf(
         pages.append(page)
 
     print(f"Generating {output_filename}")
-    extra_images = [page.image for page in pages[1:] if len(pages) > 1] or []
-    pages[0].image.save(output_filename, dpi=(DPI, DPI), save_all=True, append_images=extra_images)
+    MultipagePdf(pages).export(output_filename)
