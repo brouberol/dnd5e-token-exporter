@@ -108,8 +108,8 @@ class PageGrid:
 
     def size_in_slots(self, size_h: int, size_w: int) -> tuple[int, int]:
         """Returns the number of slots taken by a token dimension, in each direction"""
-        width_size_in_slots = int(size_w / BASE_TOKEN_SIZE)
-        height_size_in_slots = int(size_h / BASE_TOKEN_SIZE)
+        width_size_in_slots = max(int(size_w / BASE_TOKEN_SIZE), 1)
+        height_size_in_slots = max(int(size_h / BASE_TOKEN_SIZE), 1)
         return (width_size_in_slots, height_size_in_slots)
 
     def next_available_slot(self, size_w: int, size_h: int) -> Optional[SlotCoordinates]:
