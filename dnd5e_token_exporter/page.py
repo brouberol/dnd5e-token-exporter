@@ -29,8 +29,8 @@ FONT_SIZE = 10
 FONT = ImageFont.truetype("Monaco.ttf", FONT_SIZE)
 
 
-_SlotCoordinates = NamedTuple("Slotcoordinates", [("row", int), ("column", int)])
-PixelCoordinates = NamedTuple("Pixel", [("row", int), ("column", int)])
+_SlotCoordinates = NamedTuple("_SlotCoordinates", [("row", int), ("column", int)])
+PixelCoordinates = NamedTuple("PixelCoordinates", [("row", int), ("column", int)])
 
 
 class SlotCoordinates(_SlotCoordinates):

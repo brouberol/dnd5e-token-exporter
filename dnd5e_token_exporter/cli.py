@@ -1,5 +1,5 @@
 import argparse
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Self, Optional
 
@@ -15,6 +15,7 @@ class CliToken:
 
     @classmethod
     def from_str(cls, s: str) -> Self:
+        source: Optional[str]
         # Parse token repetitions
         if ":" in s:
             token, times_str = s.split(":")
