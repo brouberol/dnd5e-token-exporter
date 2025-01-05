@@ -14,11 +14,12 @@ class Token:
     name: str
     local: bool
 
+    @property
+    def cached_filepath(self) -> Path:
+        return Path(f"{tempfile.gettempdir()}/{self.source}_{self.name}.webp")
+
     def download_token_file(self) -> Path:
-        if self.local:
-            return Path(self.name)
-        cached_file = Path(f"{tempfile.gettempdir()}/{self.source}_{self.name}.webp")
-        if cached_file.exists():
+        if (cached_file := self.cached_filepath).exists():
             return cached_file
         token_url = TOKEN_URL_TPL.format(source=self.source, name=self.name)
         resp = requests.get(token_url, timeout=5)
@@ -27,7 +28,10 @@ class Token:
         return cached_file
 
     def as_image(self) -> Image.Image:
-        filename = self.download_token_file()
+        if self.local:
+            filename = Path(self.name)
+        else:
+            filename = self.download_token_file()
         rbga_img = Image.open(filename)
         img = Image.new("RGB", rbga_img.size, "white")
         img.paste(rbga_img, rbga_img)
