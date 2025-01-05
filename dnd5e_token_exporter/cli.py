@@ -37,7 +37,7 @@ class CliToken:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Export dnd5e tokens ready to print",
+        description="Export dnd5e tokens ready for print",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
