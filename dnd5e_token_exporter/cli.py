@@ -1,7 +1,7 @@
 import argparse
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Self
+from typing import Self, Optional
 
 from .page import PageFormat, Token, generate_token_multipage_pdf
 
@@ -11,23 +11,28 @@ class CliToken:
     name: str
     times: int
     local: bool
-    # If the source is unspecified, we assume that the monster comes from the Monster Manual
-    source: str = field(default="MM")
+    source: Optional[str]
 
     @classmethod
     def from_str(cls, s: str) -> Self:
+        # Parse token repetitions
         if ":" in s:
             token, times_str = s.split(":")
             times = int(times_str)
         else:
             token, times = s, 1
+
+        # Parse token source
         if token.count("/") == 1:
             source, name = token.split("/")
-            kwargs = {"name": name, "source": source}
         else:
-            kwargs = {"name": token}
-        local = Path(token).exists()
-        return cls(times=times, local=local, **kwargs)
+            source, name = "MM", token  # Assume Monster Manual by default
+
+        # Set source to None for local tokens
+        if local := Path(token).exists():
+            source = None
+
+        return cls(name=name, times=times, local=local, source=source)
 
 
 def parse_args() -> argparse.Namespace:

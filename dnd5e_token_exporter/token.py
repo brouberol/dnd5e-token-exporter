@@ -1,6 +1,7 @@
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 
 import requests
 from PIL import Image
@@ -10,7 +11,7 @@ TOKEN_URL_TPL = "https://5e.tools/img/bestiary/tokens/{source}/{name}.webp"
 
 @dataclass
 class Token:
-    source: str
+    source: Optional[str]
     name: str
     local: bool
 
