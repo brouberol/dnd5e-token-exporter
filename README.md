@@ -1,3 +1,6 @@
+> [!WARNING]  
+> Moved to https://git.balthazar-rouberol.com/brouberol/dnd5e-token-exporter
+
 # dnd5e-token-exporter
 
 This tool allows you to export rows of tokens of D&D5e creatures onto a page, so that you can then punch-hole them and turn them into physical tokens, using this [technique](https://www.youtube.com/watch?v=LBZPi4oKlCQ) from JP Coovert.
